@@ -7,7 +7,7 @@ import { authRoutes } from "./routes/auth";
 const app = new Elysia()
 const PORT = process.env.PORT!
 
-app.group("/api/auth",(group) => authRoutes(group))
+app.group("/api/auth",(group) => authRoutes(group as any))
 
 
 app.listen(PORT, () => console.log(`Server is running on ${PORT}`))

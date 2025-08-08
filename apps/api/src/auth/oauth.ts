@@ -1,12 +1,13 @@
-import type { Context, ElysiaContext } from "elysia";
+import type { Context } from "elysia";
 import { prisma } from "@repo/db"
 import { encrypt } from "./crypto";
 
-
-
-export const callbackFunction = async ({ query, jwt, cookies }: Context & ElysiaContext) => {
+// Fix 1: Use proper Elysia context type
+export const callbackFunction = async (ctx: Context) => {
     try {
+        const { query, jwt, cookie } = ctx; // Note: 'cookie' not 'cookies'
         const { code } = query;
+        
         if(!code) {
             return new Response("No code provided", { status: 400 })
         }
@@ -14,7 +15,8 @@ export const callbackFunction = async ({ query, jwt, cookies }: Context & Elysia
         const res = await fetch("https://github.com/login/oauth/access_token", {
             method: "POST",
             headers: {
-                Accept: 'application/json', 'Content-Type': 'application/json'
+                Accept: 'application/json', 
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 client_id: process.env.GITHUB_CLIENT_ID!,
@@ -67,9 +69,10 @@ export const callbackFunction = async ({ query, jwt, cookies }: Context & Elysia
 
         const jwtToken = await jwt.sign({
             id: user.id
-        }, process.env.JWT_SECRET) 
+        }) 
 
-        cookies.set("authToken", {
+        // Alternative: Use setCookie method
+        cookie.authToken?.set( {
             value: jwtToken,
             httpOnly: true,
             path: "/",
@@ -77,11 +80,13 @@ export const callbackFunction = async ({ query, jwt, cookies }: Context & Elysia
             secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24 * 7
         })
-        
-        return Response.redirect(`${process.env.FRONTEND_URL}/home`, {status: 302})
+
+        return Response.redirect(`${process.env.FRONTEND_URL}/home`, 302)
     } catch (error) {
         console.error(error)
-        return Response.json({ message: "Error Signining you in" }, { status: 401 })
+        return new Response(JSON.stringify({ message: "Error signing you in" }), { 
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        })
     }
-
 }

@@ -2,16 +2,27 @@
 import "elysia";
 
 declare module "elysia" {
-  interface ElysiaContext {
+  interface Context {
+    query: Record<string, string | undefined>
+
     jwt: {
-      sign: (payload: Record<string, any>, opts?: any) => Promise<string> | string;
-      verify: (token?: string, opts?: any) => Promise<any> | any;
+      sign: (payload: Record<string, any>) => Promise<string> | string;
+      verify: (token?: string) => Promise<any> | any;
     };
 
-    cookies: {
-      get: (id: string) => string;
-      set: (...args: any[]) => void; // allow multiple signatures
-      delete: () => void;
+    cookie: {
+      [key: string]: {
+        get: () => string | undefined;
+        set: (options: {
+          value: string;
+          httpOnly?: boolean;
+          path?: string;
+          sameSite?: 'strict' | 'lax' | 'none';
+          secure?: boolean;
+          maxAge?: number;
+        }) => void;
+        remove: () => void;
+      };
     };
   }
 }
