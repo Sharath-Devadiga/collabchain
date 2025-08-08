@@ -19,6 +19,6 @@ model User {
   email        String       @unique
   createdAt    DateTime     @default(now())    
   username     String       @unique 
-    
-
+  githubId     Int          @unique
+  accessToken  String 
 }
