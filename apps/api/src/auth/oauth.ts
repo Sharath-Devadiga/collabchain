@@ -1,6 +1,6 @@
-import type { Context } from "elysia";
 import { prisma } from "@repo/db"
 import { encrypt } from "./crypto";
+import type { Context } from "elysia";
 
 // Fix 1: Use proper Elysia context type
 export const callbackFunction = async (ctx: Context) => {
@@ -68,8 +68,9 @@ export const callbackFunction = async (ctx: Context) => {
         })
 
         const jwtToken = await jwt.sign({
-            id: user.id
-        }) 
+            userId: user.id,
+            username: login
+        },  { expiresIn: "7d" }) 
 
         // Alternative: Use setCookie method
         cookie.authToken?.set( {
