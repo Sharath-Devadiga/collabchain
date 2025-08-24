@@ -11,12 +11,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "*",
+    "axios": "^1.11.0",
     "next": "^15.4.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@repo/ui": "*",
     "@next/eslint-plugin-next": "^15.4.2",
     "@repo/eslint-config": "*",
     "@repo/tailwind-config": "*",
