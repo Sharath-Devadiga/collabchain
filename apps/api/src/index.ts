@@ -1,23 +1,22 @@
-import dotenv from "dotenv"
-dotenv.config()
-import Elysia from "elysia";
-import { authRoutes } from "./routes/auth";
+import dotenv from "dotenv";
+dotenv.config();
+
+import { Elysia } from "elysia";
+import { authRouter } from "./routes/auth";
 import jwt from "@elysiajs/jwt";
-import { authMiddleware } from "./middleware/auth";
+import { cors } from '@elysiajs/cors'
 
-
-const app = new Elysia()
-const PORT = process.env.PORT!
+const app = new Elysia();
+app.use(cors())
+const PORT = process.env.PORT!;
 
 app.use(
     jwt({
         name: "jwt",
-        secret: process.env.JWT_SECRET!
+        secret: process.env.JWT_SECRET!,
     })
-)
+);
 
-app.group("/api/auth",(group) => authRoutes(group as any))
+app.use(authRouter);
 
-
-
-app.listen(PORT, () => console.log(`Server is running on ${PORT}`))
+app.listen(PORT, () => console.log(`Server is running on ${PORT}`));
