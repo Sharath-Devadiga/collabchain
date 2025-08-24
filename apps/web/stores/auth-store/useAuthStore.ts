@@ -1,22 +1,26 @@
-// store/auth.ts
 import { create } from 'zustand';
-import axios from 'axios';
 import { AuthStore } from './types';
+import { axiosInstance } from '../../lib/axios';
 
-
-
-export const useAuth = create<AuthStore>((set) => ({
-  user: null,
+export const useAuthStore = create<AuthStore>((set) => ({
+  authUser: null,
+  isLoggingOut: false,
+  
   fetchUser: async () => {
-    try {
-      const res = await axios.get('/api/auth/me', { withCredentials: true });
-      set({ user: res.data });
-    } catch (error) {
-      set({ user: null });
-      console.error("Error while getting user information", error)
-    }
+   
   },
-  logout: () => {
-    set({ user: null });
+  
+  logout: async () => {
+    set({ isLoggingOut: true})
+    try{
+      await axiosInstance.post("/api/auth/logout")
+      set({ authUser: null });
+    } catch (e) {
+      console.error("Error while logging out: ", e)
+    }
+    finally {
+      set({ isLoggingOut: false})
+    }
+    
   }
 }));

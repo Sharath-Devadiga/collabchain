@@ -5,7 +5,9 @@ export type User = {
 };
 
 export type AuthStore = {
-  user: User | null;
-  fetchUser: () => Promise<void>;
+  authUser: User | null;
+  isLoggingOut: boolean;
+  
+  fetchUser: () => void;
   logout: () => void;
 };
