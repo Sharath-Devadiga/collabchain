@@ -2,14 +2,16 @@ import { prisma } from "@repo/db"
 import { encrypt } from "./crypto";
 import type { Context } from "elysia";
 
-// Fix 1: Use proper Elysia context type
 export const callbackFunction = async (ctx: Context) => {
     try {
-        const { query, jwt, cookie } = ctx; // Note: 'cookie' not 'cookies'
+        const { query, jwt, cookie, redirect } = ctx;
         const { code } = query;
         
         if(!code) {
-            return new Response("No code provided", { status: 400 })
+          ctx.set.status = 400
+          return {
+            msg: "No code provided"
+          }
         }
 
         const res = await fetch("https://github.com/login/oauth/access_token", {
@@ -27,7 +29,10 @@ export const callbackFunction = async (ctx: Context) => {
 
         const { access_token } = await res.json() as { access_token: string } 
         if(!access_token) {
-            return new Response("Github auth failed", { status:401 })
+          ctx.set.status = 401
+          return {
+            msg: "Github authentication failed"
+          }
         }
 
         const [userRes, emailRes] = await Promise.all([
@@ -72,7 +77,6 @@ export const callbackFunction = async (ctx: Context) => {
             username: login
         },  { expiresIn: "7d" }) 
 
-        // Alternative: Use setCookie method
         cookie.authToken?.set( {
             value: jwtToken,
             httpOnly: true,
@@ -82,12 +86,12 @@ export const callbackFunction = async (ctx: Context) => {
             maxAge: 60 * 60 * 24 * 7
         })
 
-        return Response.redirect(`${process.env.FRONTEND_URL}/home`, 302)
+        return redirect(`${process.env.FRONTEND_URL}/home`, 302)
     } catch (error) {
         console.error(error)
-        return new Response(JSON.stringify({ message: "Error signing you in" }), { 
-            status: 401,
-            headers: { 'Content-Type': 'application/json' }
-        })
+        ctx.set.status = 500
+        return {
+          msg: "Internal server error"
+        }
     }
 }

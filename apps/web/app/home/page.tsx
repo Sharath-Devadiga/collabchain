@@ -2,20 +2,25 @@
 
 import { Loader2 } from "lucide-react"
 import { useAuthStore } from "../../stores/auth-store/useAuthStore"
-import { ProtectedRoute } from "../../components/protected-route"
+import { useRouter } from "next/navigation"
 
 
 export default function HomePage() {
   const { logout, isLoggingOut } = useAuthStore()
+  const router = useRouter()
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
   
-  return <ProtectedRoute>
+  return <div>
     <div>
       Welcome to collabchain
         
       <br />
       <button 
         className="border px-3 py-2 rounded-md"
-        onClick={logout}
+        onClick={handleLogout}
       > 
         {
           isLoggingOut ? 
@@ -26,5 +31,5 @@ export default function HomePage() {
         }
       </button>
     </div>
-  </ProtectedRoute>
+  </div>
 }

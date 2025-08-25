@@ -9,10 +9,43 @@ datasource db {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  createdAt    DateTime     @default(now())    
-  username     String       @unique 
-  githubId     Int          @unique
-  accessToken  String 
+  id           String    @id @default(uuid())
+  email        String    @unique
+  createdAt    DateTime  @default(now())
+  username     String    @unique
+  githubId     Int       @unique
+  accessToken  String
+  teamsCreated Team[]    @relation("CreatedTeams")
+  teamsJoined  Team[]    @relation("JoinedTeams")
+  messages     Message[]
+}
+
+model Team {
+  id          String     @id @default(uuid())
+  title       String
+  githubRepo  String
+  createdBy   User       @relation("CreatedTeams", fields: [createdById], references: [id])
+  createdById String
+  members     User[]     @relation("JoinedTeams")
+  chats       ChatRoom[]
+}
+
+model ChatRoom {
+  id        String    @id @default(uuid())
+  title     String
+  createdAt DateTime  @default(now())
+  team      Team      @relation(fields: [teamId], references: [id])
+  teamId    String
+  messages  Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String?
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
+  chat      ChatRoom @relation(fields: [chatId], references: [id])
+  chatId    String
 }

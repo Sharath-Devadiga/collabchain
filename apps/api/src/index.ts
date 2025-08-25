@@ -5,6 +5,7 @@ import { Elysia } from "elysia";
 import { authRouter } from "./routes/auth";
 import jwt from "@elysiajs/jwt";
 import { cors } from '@elysiajs/cors'
+import { userRouter } from "./routes/user";
 
 const app = new Elysia();
 app.use(cors())
@@ -18,5 +19,6 @@ app.use(
 );
 
 app.use(authRouter);
+app.use(userRouter)
 
 app.listen(PORT, () => console.log(`Server is running on ${PORT}`));

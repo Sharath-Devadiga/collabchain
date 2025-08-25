@@ -7,13 +7,19 @@ export const authMiddleware = async (ctx: Context) => {
         const { jwt, cookie } = ctx
         const token = cookie.authToken?.value
         if(!token) {
-            return new Response("Unauthorized", { status: 401 })
+            ctx.set.status = 401
+            return {
+              msg: "Unauthorised"
+            }
         }
 
         const payload = await jwt.verify(token)
 
         if(!payload) {
-            return new Response("Unauthorised", { status: 401 })
+          ctx.set.status = 401
+          return {
+            msg: "Unauthorised"
+          }
         }
 
         ctx.userId = payload.userId;
@@ -21,6 +27,9 @@ export const authMiddleware = async (ctx: Context) => {
 
     } catch (error) {
         console.error(error)
-        return new Response("Unauthorised", {status: 401})
+        ctx.set.status = 401
+        return {
+          msg: "Unauthorised"
+        }
     }
 }
