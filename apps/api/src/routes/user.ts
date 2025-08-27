@@ -15,23 +15,5 @@ export const userRouter = new Elysia({ prefix: "/api/user" })
       msg: "dummy user route"
     }
   })
-  .guard(
-    {
-      beforeHandle({ set, cookie }) {
-        if(!validate(cookie))
-          return (set.status = "Unauthorized")
-      }
-    },
-    (app) =>
-      app
-        .use(teamHandler)
-  )
+  .use(teamHandler)
 
-const validate = (
-  cookie: Record<string, Cookie<string | undefined>> & Record<string, string>
-) => {
-  if(!cookie.authToken?.value)
-    return false
-  else 
-    return true
-}

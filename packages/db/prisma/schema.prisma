@@ -24,7 +24,7 @@ model User {
 model Team {
   id          String     @id @default(uuid())
   title       String
-  githubRepo  String
+  githubRepo  String?
   createdBy   User       @relation("CreatedTeams", fields: [createdById], references: [id])
   createdById String
   members     User[]     @relation("JoinedTeams")

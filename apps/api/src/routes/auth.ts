@@ -1,7 +1,6 @@
 import { Elysia, t } from "elysia"
 import { loginHandler } from "../auth/login"
 import jwt from "@elysiajs/jwt"
-import { callbackFunction } from "../auth/oauth"
 import { prisma } from "@repo/db"
 import { encrypt } from "../auth/crypto"
 import { getExpTimestamp } from "../lib/util"
@@ -12,7 +11,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
     // .use(cookie())
     .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
     .get("/github/signin", loginHandler)
-    .all("/github/cllback", callbackFunction)
     .all("/github/callback", async ({ query, jwt, cookie: { accessToken, refreshToken }, set }) => {
       const { code } =  query
       if(!code) {
@@ -90,8 +88,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
         maxAge: ACCESS_TOKEN_EXP,
         path: "/",
       });
-      
-      console.log("Created access token: ", accessJWTToken)
 
       // create refresh token
       const refreshJWTToken = await jwt.sign({
@@ -105,8 +101,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
         path: "/",
       });
       
-      console.log("Created refresh token: ", refreshJWTToken)
-      
       await prisma.user.update({
         where: {
           id: user.id
@@ -119,75 +113,100 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
       return Response.redirect(`${process.env.FRONTEND_URL}/home`, 302)
     })
     .post("/refresh", async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
-      if (!refreshToken?.value) {
-        // handle error for refresh token is not available
-        set.status = "Unauthorized";
-        throw new Error("Refresh token is missing");
+      try {
+        if (!refreshToken?.value) {
+          // handle error for refresh token is not available
+          set.status = 401;
+          console.log("1")
+          return {
+            message: "Refresh token is missing"
+          }
+        }
+        console.log("2")
+        // get refresh token from cookie
+        const jwtPayload = await jwt.verify(refreshToken?.value);
+        if (!jwtPayload) {
+          // handle error for refresh token is tempted or incorrect
+          set.status = 403;
+          return {
+            message: "Refresh token is invalid"
+          }
+        }
+  
+        // get user from refresh token
+        const userId = jwtPayload.sub;
+  
+        // verify user exists or not
+        const user = await prisma.user.findUnique({
+          where: {
+            id: userId,
+          },
+        });
+  
+        if (!user) {
+          // handle error for user not found from the provided refresh token
+          set.status = 403;
+          return {
+            message: "Refresh token is invalid"
+          }
+        }
+        
+        if (user.refreshToken !== refreshToken.value) {
+          set.status = 403;
+          return {
+            message: "Refresh token mismatch"
+          };
+        }
+        
+        // create new access token
+        const accessJWTToken = await jwt.sign({
+          sub: user.id,
+          exp: getExpTimestamp(ACCESS_TOKEN_EXP),
+        });
+        accessToken?.set({
+          value: accessJWTToken,
+          httpOnly: true,
+          maxAge: ACCESS_TOKEN_EXP,
+          path: "/",
+        });
+  
+        // create new refresh token
+        const refreshJWTToken = await jwt.sign({
+          sub: user.id,
+          exp: getExpTimestamp(REFRESH_TOKEN_EXP),
+        });
+        refreshToken?.set({
+          value: refreshJWTToken,
+          httpOnly: true,
+          maxAge: REFRESH_TOKEN_EXP,
+          path: "/",
+        });
+  
+        // set refresh token in db
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            refreshToken: refreshJWTToken,
+          },
+        });
+  
+        return {
+          message: "Access token generated successfully",
+          data: {
+            accessToken: accessJWTToken,
+            refreshToken: refreshJWTToken,
+          },
+        };
       }
-      // get refresh token from cookie
-      const jwtPayload = await jwt.verify(refreshToken?.value);
-      if (!jwtPayload) {
-        // handle error for refresh token is tempted or incorrect
-        set.status = "Forbidden";
-        throw new Error("Refresh token is invalid");
+      catch(e) {
+        console.log("Error while refreshing token: ", e)
+        set.status = 500
+        return {
+          message: "Internal server error"
+        }
       }
-
-      // get user from refresh token
-      const userId = jwtPayload.sub;
-
-      // verify user exists or not
-      const user = await prisma.user.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-
-      if (!user) {
-        // handle error for user not found from the provided refresh token
-        set.status = "Forbidden";
-        throw new Error("Refresh token is invalid");
-      }
-      // create new access token
-      const accessJWTToken = await jwt.sign({
-        sub: user.id,
-        exp: getExpTimestamp(ACCESS_TOKEN_EXP),
-      });
-      accessToken?.set({
-        value: accessJWTToken,
-        httpOnly: true,
-        maxAge: ACCESS_TOKEN_EXP,
-        path: "/",
-      });
-
-      // create new refresh token
-      const refreshJWTToken = await jwt.sign({
-        sub: user.id,
-        exp: getExpTimestamp(REFRESH_TOKEN_EXP),
-      });
-      refreshToken?.set({
-        value: refreshJWTToken,
-        httpOnly: true,
-        maxAge: REFRESH_TOKEN_EXP,
-        path: "/",
-      });
-
-      // set refresh token in db
-      await prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          refreshToken: refreshJWTToken,
-        },
-      });
-
-      return {
-        message: "Access token generated successfully",
-        data: {
-          accessToken: accessJWTToken,
-          refreshToken: refreshJWTToken,
-        },
-      };
     })
     .use(authPlugin)
     .get("/user", ({ user }) => {

@@ -1,5 +1,4 @@
 import Elysia from "elysia";
-import type { Context } from "elysia";
 import { authPlugin } from "../lib/plugin";
 
 export const fetchTeams = new Elysia({ prefix: "/fetch-teams" })

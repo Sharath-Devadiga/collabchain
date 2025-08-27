@@ -17,9 +17,10 @@ axiosInstance.interceptors.response.use(
     },
     async (error) => {
         const originalRequest = error.config;
+        const isRefreshRequest = originalRequest.url.includes("/api/auth/refresh");
 
         // Check if the error is due to an unauthorized request
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (error.response.status === 401 && !originalRequest._retry && !isRefreshRequest) {
             originalRequest._retry = true; // Prevent infinite loop
             try {
                 // Attempt to refresh the access token
