@@ -62,12 +62,12 @@ export const callbackFunction = async (ctx: Context) => {
                 githubId: Number(id) 
             },
             update: {
-                accessToken: encrypt(access_token)
+                githubAccessToken: encrypt(access_token)
             },
             create: {
                 username: login,
                 githubId: Number(id),
-                accessToken: encrypt(access_token),
+                githubAccessToken: encrypt(access_token),
                 email: primaryEmail
             }
         })

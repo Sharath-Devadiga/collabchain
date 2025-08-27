@@ -70,12 +70,12 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
               githubId: Number(id) 
           },
           update: {
-              accessToken: encrypt(access_token)
+              githubAccessToken: encrypt(access_token)
           },
           create: {
               username: login,
               githubId: Number(id),
-              accessToken: encrypt(access_token),
+              githubAccessToken: encrypt(access_token),
               email: primaryEmail
           }
       })
@@ -118,6 +118,77 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
       
       return Response.redirect(`${process.env.FRONTEND_URL}/home`, 302)
     })
+    .post("/refresh", async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
+      if (!refreshToken?.value) {
+        // handle error for refresh token is not available
+        set.status = "Unauthorized";
+        throw new Error("Refresh token is missing");
+      }
+      // get refresh token from cookie
+      const jwtPayload = await jwt.verify(refreshToken?.value);
+      if (!jwtPayload) {
+        // handle error for refresh token is tempted or incorrect
+        set.status = "Forbidden";
+        throw new Error("Refresh token is invalid");
+      }
+
+      // get user from refresh token
+      const userId = jwtPayload.sub;
+
+      // verify user exists or not
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) {
+        // handle error for user not found from the provided refresh token
+        set.status = "Forbidden";
+        throw new Error("Refresh token is invalid");
+      }
+      // create new access token
+      const accessJWTToken = await jwt.sign({
+        sub: user.id,
+        exp: getExpTimestamp(ACCESS_TOKEN_EXP),
+      });
+      accessToken?.set({
+        value: accessJWTToken,
+        httpOnly: true,
+        maxAge: ACCESS_TOKEN_EXP,
+        path: "/",
+      });
+
+      // create new refresh token
+      const refreshJWTToken = await jwt.sign({
+        sub: user.id,
+        exp: getExpTimestamp(REFRESH_TOKEN_EXP),
+      });
+      refreshToken?.set({
+        value: refreshJWTToken,
+        httpOnly: true,
+        maxAge: REFRESH_TOKEN_EXP,
+        path: "/",
+      });
+
+      // set refresh token in db
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          refreshToken: refreshJWTToken,
+        },
+      });
+
+      return {
+        message: "Access token generated successfully",
+        data: {
+          accessToken: accessJWTToken,
+          refreshToken: refreshJWTToken,
+        },
+      };
+    })
     .use(authPlugin)
     .get("/user", ({ user }) => {
       return {
@@ -144,4 +215,5 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
         message: "Logout successfully",
       };
     })
+    
     

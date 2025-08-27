@@ -1,9 +1,11 @@
 import Elysia from "elysia";
 import type { Context } from "elysia";
+import { authPlugin } from "../lib/plugin";
 
 export const fetchTeams = new Elysia({ prefix: "/fetch-teams" })
-  .get(("/"), (ctx: Context) => {
-    const userId = ctx.cookie.proflie?.value
+  .use(authPlugin)
+  .get(("/"), ({user}) => {
+    const userId = user.id
     console.log("user id: ", userId)
     return {
       msg: "Teams fetched successfully",
