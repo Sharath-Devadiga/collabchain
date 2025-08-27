@@ -1,6 +1,5 @@
 
 
-
 export const loginHandler = () => {
     const scope = [
         "read:user",

@@ -76,7 +76,7 @@ export const callbackFunction = async (ctx: Context) => {
             userId: user.id,
             username: login
         },  { expiresIn: "7d" }) 
-
+        
         cookie.authToken?.set( {
             value: jwtToken,
             httpOnly: true,

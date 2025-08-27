@@ -15,6 +15,7 @@ model User {
   username     String    @unique
   githubId     Int       @unique
   accessToken  String
+  refreshToken String?
   teamsCreated Team[]    @relation("CreatedTeams")
   teamsJoined  Team[]    @relation("JoinedTeams")
   messages     Message[]
