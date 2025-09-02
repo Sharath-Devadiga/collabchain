@@ -106,7 +106,8 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
           id: user.id
         },
         data: {
-          refreshToken: refreshJWTToken
+          refreshToken: refreshJWTToken,
+          refreshTokenExpiresAt: new Date(getExpTimestamp(REFRESH_TOKEN_EXP) * 1000)
         }
       })
       
@@ -149,7 +150,12 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
             message: "Refresh token mismatch"
           };
         }
-        
+
+        if (!user.refreshTokenExpiresAt || new Date() > user.refreshTokenExpiresAt) {
+          set.status = 403;
+          return { message: "Refresh token has expired" };
+        }
+
         const accessJWTToken = await jwt.sign({
           sub: user.id,
           exp: getExpTimestamp(ACCESS_TOKEN_EXP),
@@ -178,6 +184,7 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
           },
           data: {
             refreshToken: refreshJWTToken,
+            refreshTokenExpiresAt: new Date(getExpTimestamp(REFRESH_TOKEN_EXP) * 1000)
           },
         });
   
