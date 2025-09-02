@@ -12,7 +12,7 @@ export const userRouter = new Elysia({ prefix: "/api/user" })
   .get(("/"), (ctx: Context) => {
     ctx.set.status = 200
     return { 
-      msg: "dummy user route"
+      message: "dummy user route"
     }
   })
   .use(teamHandler)

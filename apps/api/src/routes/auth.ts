@@ -16,7 +16,7 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
       if(!code) {
         set.status = 400 
         return {
-          msg: "No code provided"
+          message: "No code provided"
         }
       }
 
@@ -37,7 +37,7 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
       if(!access_token) {
         set.status = 401
         return {
-          msg: "Github authentication failed"
+          message: "Github authentication failed"
         }
       }
 
@@ -115,28 +115,21 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
     .post("/refresh", async ({ cookie: { accessToken, refreshToken }, jwt, set }) => {
       try {
         if (!refreshToken?.value) {
-          // handle error for refresh token is not available
           set.status = 401;
-          console.log("1")
           return {
             message: "Refresh token is missing"
           }
         }
-        console.log("2")
-        // get refresh token from cookie
         const jwtPayload = await jwt.verify(refreshToken?.value);
         if (!jwtPayload) {
-          // handle error for refresh token is tempted or incorrect
           set.status = 403;
           return {
             message: "Refresh token is invalid"
           }
         }
   
-        // get user from refresh token
         const userId = jwtPayload.sub;
   
-        // verify user exists or not
         const user = await prisma.user.findUnique({
           where: {
             id: userId,
@@ -144,7 +137,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
         });
   
         if (!user) {
-          // handle error for user not found from the provided refresh token
           set.status = 403;
           return {
             message: "Refresh token is invalid"
@@ -158,7 +150,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
           };
         }
         
-        // create new access token
         const accessJWTToken = await jwt.sign({
           sub: user.id,
           exp: getExpTimestamp(ACCESS_TOKEN_EXP),
@@ -170,7 +161,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
           path: "/",
         });
   
-        // create new refresh token
         const refreshJWTToken = await jwt.sign({
           sub: user.id,
           exp: getExpTimestamp(REFRESH_TOKEN_EXP),
@@ -182,7 +172,6 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
           path: "/",
         });
   
-        // set refresh token in db
         await prisma.user.update({
           where: {
             id: user.id,
@@ -193,11 +182,7 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
         });
   
         return {
-          message: "Access token generated successfully",
-          data: {
-            accessToken: accessJWTToken,
-            refreshToken: refreshJWTToken,
-          },
+          message: "Access token generated successfully"
         };
       }
       catch(e) {
@@ -211,14 +196,13 @@ export const authRouter = new Elysia({ prefix: "/api/auth"})
     .use(authPlugin)
     .get("/user", ({ user }) => {
       return {
-        msg: "Current user",
+        message: "Current user",
         data: {
           user
         }
       }
     })
     .post("/logout", async ({ cookie: { accessToken, refreshToken }, user }) => {
-      // remove refresh token and access token from cookies
       accessToken?.remove();
       refreshToken?.remove();
   
