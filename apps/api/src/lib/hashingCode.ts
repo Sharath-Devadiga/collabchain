@@ -136,12 +136,15 @@ export const hashingCode = async(githubLink: string, githubCommitHash: string) =
       if(!match || match.length < 2){
         throw new Error("Error")
       }
-      return parseInt(match[1]) ? parseInt(match[1], 10) : null
+      return parseInt(`${match[1]}`)
     }
 
     const comment = () => {
       const match = text.match(/Comment: (.+)/)
-      return match[1]
+      if(!match || match.length < 2){
+        throw new Error("Error")
+      }
+      return `${match[1]}`
     }
     
     // await prisma.commit.create({
