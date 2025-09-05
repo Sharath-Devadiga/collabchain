@@ -20,6 +20,7 @@ model User {
   teamsCreated          Team[]    @relation("CreatedTeams")
   teamsJoined           Team[]    @relation("JoinedTeams")
   messages              Message[]
+  repo                  Repo[]
 }
 
 model Team {
@@ -39,6 +40,7 @@ model ChatRoom {
   team      Team      @relation(fields: [teamId], references: [id])
   teamId    String
   messages  Message[]
+  Repo      Repo?       @relation("ChatRoomRepo")
 }
 
 model Message {
@@ -50,4 +52,26 @@ model Message {
   senderId  String
   chat      ChatRoom @relation(fields: [chatId], references: [id])
   chatId    String
+}
+
+model Repo {
+  id        String  @id @default(uuid())
+  name      String
+  githubLink  String  @unique
+  chatRoomId  String  @unique
+  chatRoom  ChatRoom @relation("ChatRoomRepo", fields: [chatRoomId], references: [id])
+  commits    Commit[]
+  ownerId     String
+  owner       User  @relation(fields: [ownerId], references: [id])
+}
+
+model Commit {
+  id      String @id @default(uuid())
+  repoId  String
+  repo    Repo  @relation(fields: [repoId], references: [id])
+  githubCommitHash  String @unique
+  repoHash  String
+  rating  Int
+  comment String
+  author String
 }
