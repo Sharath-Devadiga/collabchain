@@ -95,11 +95,12 @@ export const hashingCode = async(githubLink: string, githubCommitHash: string) =
       auth: decrypt(repo.owner.githubAccessToken)
     })
 
-    const { data } = await octokit.repos.getCommit({
-      owner: repo.owner.username,
-      repo: repo.githubLink,
-      ref: githubCommitHash
-    })
+    // const { data } = await octokit.repos.getCommit({
+    //   owner: repo.owner.username,
+    //   repo: repo.githubLink,
+    //   ref: githubCommitHash
+    // })
+    const data = await run(`git show ${githubCommitHash}`) 
     if(!data.files) {
       throw new Error("No commit")
     }
