@@ -21,7 +21,6 @@ model User {
   teamsJoined           Team[]    @relation("JoinedTeams")
   messages              Message[]
   repo                  Repo[]
-  commits               Commit[]
 }
 
 model Team {
@@ -72,7 +71,7 @@ model Commit {
   repo    Repo  @relation(fields: [repoId], references: [id])
   githubCommitHash  String @unique
   repoHash  String
-  rating  String
-  devId String
-  dev   User  @relation(fields: [devId], references: [id])
+  rating  Int
+  comment String
+  author String
 }
