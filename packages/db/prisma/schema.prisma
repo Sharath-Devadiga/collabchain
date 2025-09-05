@@ -21,6 +21,7 @@ model User {
   teamsJoined           Team[]    @relation("JoinedTeams")
   messages              Message[]
   repo                  Repo[]
+  commits               Commit[]
 }
 
 model Team {
@@ -57,12 +58,21 @@ model Message {
 model Repo {
   id        String  @id @default(uuid())
   name      String
-  rating    Int?
-  comment   String  @default("Not a lot of changes, or duplicate push")
   githubLink  String  @unique
   chatRoomId  String  @unique
   chatRoom  ChatRoom @relation("ChatRoomRepo", fields: [chatRoomId], references: [id])
-  hash      String
+  commits    Commit[]
   ownerId     String
   owner       User  @relation(fields: [ownerId], references: [id])
+}
+
+model Commit {
+  id      String @id @default(uuid())
+  repoId  String
+  repo    Repo  @relation(fields: [repoId], references: [id])
+  githubCommitHash  String @unique
+  repoHash  String
+  rating  String
+  devId String
+  dev   User  @relation(fields: [devId], references: [id])
 }

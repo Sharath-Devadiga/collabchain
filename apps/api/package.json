@@ -18,6 +18,9 @@
     "@elysiajs/cookie": "^0.8.0",
     "@elysiajs/cors": "^1.3.3",
     "@elysiajs/jwt": "^1.3.2",
+    "@google/genai": "^1.17.0",
+    "@napi-rs/blake-hash": "^1.3.5",
+    "@octokit/rest": "^22.0.0",
     "dotenv": "^17.2.1",
     "elysia": "^1.3.8"
   }
