@@ -114,13 +114,35 @@ export const hashingCode = async(githubLink: string, githubCommitHash: string) =
         role: "user",
         parts: [
           {
-            text: `Task: Rate and give a short comment on this code on the basis of what it does, how it does, how optimised it is, would it work properly and if it contains bugs or idle code rating should be between 1-10 and comment should be less than 100 words following is the commit: ${changes}`
+            text: `Task: Rate and give a short comment on this code on the basis of what it does, how it does, how optimised it is, would it work properly and if it contains bugs or idle code rating should be between 1-10 and comment should be less than 100 words response should be in following format Rating: (\d), Comment: (.+) following is the commit: ${changes}`
           }
         ]
       }
     ]
     
-    
+    const response = await ai.models.generateContent({
+      model: 'Gemini 2.5 Flash-Lite',
+      contents
+    })
+
+    const { text } = response
+    if(!text) {
+      throw new Error("No response from the ai for rating code")
+    }
+
+
+    const rating = () => {
+      const match = text.match(/Rating: (\d)/)
+      if(!match || match.length < 2){
+        throw new Error("Error")
+      }
+      return parseInt(match[1]) ? parseInt(match[1], 10) : null
+    }
+
+    const comment = () => {
+      const match = text.match(/Comment: (.+)/)
+      return match[1]
+    }
     
     // await prisma.commit.create({
     //   data: {
