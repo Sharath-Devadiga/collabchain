@@ -5,6 +5,7 @@ import { joinRequestsHandler } from "./team/join-requests";
 import { invitationsHandler } from "./team/invitations";
 import { memberManagementHandler } from "./team/memberManagement";
 import { deleteTeamHandler } from "./team/deleteTeam";
+import { updateTeamHandler } from "./update-team";
 
 export const teamHandler = new Elysia({ prefix: "/team" })
   .use(createTeam)
@@ -12,4 +13,5 @@ export const teamHandler = new Elysia({ prefix: "/team" })
   .use(joinRequestsHandler)
   .use(invitationsHandler)
   .use(memberManagementHandler)
-  .use(deleteTeamHandler);
+  .use(deleteTeamHandler)
+  .use(updateTeamHandler);

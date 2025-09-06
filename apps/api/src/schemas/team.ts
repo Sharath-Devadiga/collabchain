@@ -10,6 +10,11 @@ export const createTeamSchema = t.Object({
     })
 )});
 
+export const updateTeamSchema = t.Object({
+    title: t.Optional(t.String({ minLength: 1, maxLength: 20 })),
+    githubRepo: t.Optional(t.RegExp(/^(https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+|[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)$/))
+});
+
 export const requestToJoinSchema = t.Object({
   teamId: t.String()
 });
