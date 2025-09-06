@@ -89,7 +89,7 @@ const commentSeparator = (text: string) => {
 export const hashingAndRatingCode = async(githubLink: string, githubCommitHash: string) => {
     try {
       const dirName = crypto.randomUUID()
-      const dir = path.join(process.cwd(), dirName)
+      const dir = path.join(process.cwd(), "repos", dirName)
       const repo = await prisma.repo.findUnique({
           where: {
               githubLink
@@ -134,6 +134,8 @@ export const hashingAndRatingCode = async(githubLink: string, githubCommitHash: 
       if(!text) {
         throw new Error("No response from the ai for rating code")
       }
+
+      await run(`rm -rf ${dir}`)
 
 
       const rating = ratingSeparator(text)
