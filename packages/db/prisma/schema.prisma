@@ -44,7 +44,7 @@ enum TeamVisibility{
 
 model TeamJoinRequest{
   id      String      @id @default(uuid())
-  team     Team        @relation("TeamJoinRequests",fields: [teamId],references: [id])
+  team     Team        @relation("TeamJoinRequests",fields: [teamId],references: [id],onDelete: Cascade)
   teamId    String    
   requester  User      @relation("UserJoinRequests",fields: [requesterId],references: [id])
   requesterId  String
@@ -62,7 +62,7 @@ model TeamInvitation {
   id        String   @id @default(uuid())
   code      String   @unique
   teamId    String
-  team      Team     @relation(fields: [teamId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id],onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime? 
 }
@@ -71,7 +71,7 @@ model ChatRoom {
   id        String    @id @default(uuid())
   title     String
   createdAt DateTime  @default(now())
-  team      Team      @relation(fields: [teamId], references: [id])
+  team      Team      @relation(fields: [teamId], references: [id],onDelete: Cascade)
   teamId    String
   messages  Message[]
   Repo      Repo?       @relation("ChatRoomRepo")

@@ -25,3 +25,16 @@ export const manageJoinRequestSchema = t.Object({
 export const joinWithInviteSchema = t.Object({
     inviteCode: t.String()
 });
+
+export const removeMemberSchema = t.Object({
+    teamId: t.String(),
+    memberId: t.String()
+});
+
+export const leaveTeamSchema = t.Object({
+    teamId: t.String()
+});
+
+export const deleteTeamSchema = t.Object({
+    teamId: t.String()
+});
